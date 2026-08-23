@@ -16,7 +16,7 @@
 - Create: `tests/test_matrix.py`
 - Create: `src/zotero_evidence_matrix/matrix.py`
 
-- [ ] **Step 1: Write a failing test**
+- [x] **Step 1: Write a failing test**
 
 ```python
 def test_build_matrix_groups_rows_and_keeps_citekeys(tmp_path):
@@ -25,12 +25,12 @@ def test_build_matrix_groups_rows_and_keeps_citekeys(tmp_path):
     assert build_matrix(source)[0].citekey == "a2024"
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `python -m pytest tests/test_matrix.py -q`
 Expected: an import failure because the package does not yet exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 @dataclass(frozen=True)
@@ -39,10 +39,12 @@ class EvidenceRow: ...
 def build_matrix(source: Path) -> list[EvidenceRow]: ...
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `python -m pytest tests/test_matrix.py -q`
 Expected: `1 passed`.
+
+Execution evidence: `python -m pytest tests/test_matrix.py -q` first failed with `ModuleNotFoundError: No module named 'zotero_evidence_matrix'` before the package existed; after implementation, the same command reported `1 passed in 0.07s`.
 
 ### Task 2: Deterministic Markdown renderer
 
