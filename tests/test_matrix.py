@@ -55,6 +55,34 @@ def test_build_matrix_rejects_a_whitespace_only_required_value(tmp_path):
         build_matrix(source)
 
 
+def test_build_matrix_rejects_a_duplicate_citekey_within_a_topic(tmp_path):
+    source = tmp_path / "notes.csv"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "A,a2024,Methods,Useful,Small sample\n"
+        "B,a2024,Methods,Replicable,Single site\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        MatrixValidationError,
+        match="Duplicate citekey 'a2024' in topic 'Methods'",
+    ):
+        build_matrix(source)
+
+
+def test_build_matrix_maps_malformed_csv_to_a_validation_error(tmp_path):
+    source = tmp_path / "notes.csv"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        '"Unclosed,a2024,Methods,Useful,Small sample\n',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(MatrixValidationError, match="Malformed CSV:"):
+        build_matrix(source)
+
+
 def test_render_matrix_groups_topics_in_case_insensitive_order_and_keeps_citekeys():
     rows = [
         EvidenceRow("Z paper", "z2024", "zebra", "Last", "Limited"),
@@ -142,3 +170,25 @@ def test_module_cli_rejects_matching_input_and_output_paths(tmp_path):
 
     assert result.returncode != 0
     assert result.stderr.strip() == "Input and output paths must differ"
+
+
+def test_module_cli_reports_validation_errors_concisely(tmp_path):
+    source = tmp_path / "notes.csv"
+    destination = tmp_path / "matrix.md"
+    source.write_text(
+        "title,citekey,topic,claim\nA,a2024,Methods,Useful\n",
+        encoding="utf-8",
+    )
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [sys.executable, "-m", "zotero_evidence_matrix", str(source), str(destination)],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert result.stderr.strip() == "Missing required CSV columns: limitation"

@@ -26,32 +26,49 @@ class EvidenceRow:
 
 def build_matrix(source: Path) -> list[EvidenceRow]:
     """Read evidence rows from a UTF-8 CSV file."""
-    with source.open("r", encoding="utf-8", newline="") as source_file:
-        reader = csv.DictReader(source_file)
-        fieldnames = reader.fieldnames or []
-        missing_columns = [column for column in REQUIRED_COLUMNS if column not in fieldnames]
-        if missing_columns:
-            raise MatrixValidationError(
-                f"Missing required CSV columns: {', '.join(missing_columns)}"
-            )
+    try:
+        with source.open("r", encoding="utf-8", newline="") as source_file:
+            reader = csv.DictReader(source_file, strict=True)
+            fieldnames = reader.fieldnames or []
+            missing_columns = [column for column in REQUIRED_COLUMNS if column not in fieldnames]
+            if missing_columns:
+                raise MatrixValidationError(
+                    f"Missing required CSV columns: {', '.join(missing_columns)}"
+                )
 
-        rows = []
-        for row_number, row in enumerate(reader, start=2):
-            required_values = {
-                column: (row[column] or "").strip() for column in REQUIRED_COLUMNS
-            }
-            for column, value in required_values.items():
-                if not value:
+            rows = []
+            seen_citekeys: set[tuple[str, str]] = set()
+            for row_number, row in enumerate(reader, start=2):
+                required_values = {
+                    column: (row[column] or "").strip() for column in REQUIRED_COLUMNS
+                }
+                for column, value in required_values.items():
+                    if not value:
+                        raise MatrixValidationError(
+                            f"Blank required value for '{column}' in row {row_number}"
+                        )
+                _validate_markdown_safety(
+                    required_values["topic"], required_values["citekey"]
+                )
+                citekey_location = (
+                    required_values["topic"],
+                    required_values["citekey"],
+                )
+                if citekey_location in seen_citekeys:
                     raise MatrixValidationError(
-                        f"Blank required value for '{column}' in row {row_number}"
+                        "Duplicate citekey "
+                        f"'{required_values['citekey']}' in topic "
+                        f"'{required_values['topic']}'"
                     )
-            _validate_markdown_safety(required_values["topic"], required_values["citekey"])
-            optional_values = {
-                column: row[column] for column in ("authors", "year") if column in row
-            }
-            rows.append(EvidenceRow(**required_values, **optional_values))
+                seen_citekeys.add(citekey_location)
+                optional_values = {
+                    column: row[column] for column in ("authors", "year") if column in row
+                }
+                rows.append(EvidenceRow(**required_values, **optional_values))
 
-        return rows
+            return rows
+    except csv.Error as error:
+        raise MatrixValidationError(f"Malformed CSV: {error}") from error
 
 
 def render_matrix(rows: list[EvidenceRow]) -> str:

@@ -82,6 +82,8 @@ Execution evidence: First, `python -m pytest tests/test_matrix.py -q` reported `
 
 Verification evidence: `python -m pytest -q` reported `9 passed in 0.23s`; `python -m ruff check .` reported `All checks passed!`; `git diff --check` exited successfully; and the credential-pattern scan reported `credential scan: no matches`. The local interpreter has Ruff 0.4.10 and no `pip_audit` module, so an audit could not run locally without installing dependencies; the CI workflow installs and invokes the exact configured `pip-audit==2.10.0`.
 
+Review repair evidence: duplicate citekeys within one trimmed topic and malformed quoted CSV each first failed (`DID NOT RAISE` and a non-malformed validation message, respectively); after strict parsing, `csv.Error` mapping, and duplicate detection, the focused run reported `2 passed, 10 deselected`. The concise CLI validation-error test already passed against the existing `MatrixValidationError` boundary. Following the authorized `python -m pip install -e '.[dev]'`, the pinned tools installed (`pytest 9.1.1`, `ruff 0.12.10`, `pip-audit 2.10.0`). Fresh checks reported `12 passed in 0.36s` and `All checks passed!`; `pip_audit` completed but reported `207 known vulnerabilities in 32` packages in the shared interpreter, including unrelated globally installed dependencies, and three packages it could not audit because they are not on PyPI. No production dependency is declared by this project.
+
 ## Plan self-review
 
 The three tasks cover each specified input/output behavior, all validation boundaries, no-network safety, test proof, documentation, license, and CI. The plan has no unbounded feature work; it is one local transformation only.
