@@ -5,7 +5,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from zotero_evidence_matrix.matrix import EvidenceRow, build_matrix, render_matrix
+from zotero_evidence_matrix.matrix import (
+    EvidenceRow,
+    MatrixValidationError,
+    build_matrix,
+    render_matrix,
+)
 
 
 def test_build_matrix_groups_rows_and_keeps_citekeys(tmp_path):
@@ -73,3 +78,17 @@ def test_render_matrix_escapes_pipes_and_line_breaks_in_table_cells():
     rendered = render_matrix([row])
 
     assert "| A \\| paper<br>revised | Claim \\| detail<br>continued | A<br>limitation \\| note | [@a2024] |" in rendered
+
+
+def test_render_matrix_rejects_a_topic_containing_a_line_break():
+    row = EvidenceRow("Paper", "safe2024", "Methods\n## Injected", "Claim", "Limit")
+
+    with pytest.raises(MatrixValidationError, match="Topic may not contain line breaks"):
+        render_matrix([row])
+
+
+def test_render_matrix_rejects_a_citekey_outside_the_safe_grammar():
+    row = EvidenceRow("Paper", "safe]\n[@injected", "Methods", "Claim", "Limit")
+
+    with pytest.raises(MatrixValidationError, match="Citekey contains unsafe characters"):
+        render_matrix([row])

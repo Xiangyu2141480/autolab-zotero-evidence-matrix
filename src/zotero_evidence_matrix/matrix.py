@@ -1,10 +1,12 @@
 """CSV parsing for a local evidence matrix."""
 
 import csv
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 REQUIRED_COLUMNS = ("title", "citekey", "topic", "claim", "limitation")
+SAFE_CITEKEY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:+-]*")
 
 
 class MatrixValidationError(ValueError):
@@ -43,6 +45,7 @@ def build_matrix(source: Path) -> list[EvidenceRow]:
                     raise MatrixValidationError(
                         f"Blank required value for '{column}' in row {row_number}"
                     )
+            _validate_markdown_safety(required_values["topic"], required_values["citekey"])
             optional_values = {
                 column: row[column] for column in ("authors", "year") if column in row
             }
@@ -56,6 +59,7 @@ def render_matrix(rows: list[EvidenceRow]) -> str:
     groups: dict[str, list[EvidenceRow]] = {}
     for row in rows:
         topic = row.topic.strip()
+        _validate_markdown_safety(topic, row.citekey)
         groups.setdefault(topic, []).append(row)
 
     sections = []
@@ -86,3 +90,10 @@ def _escape_cell(value: str) -> str:
         .replace("\r", "\n")
         .replace("\n", "<br>")
     )
+
+
+def _validate_markdown_safety(topic: str, citekey: str) -> None:
+    if "\r" in topic or "\n" in topic:
+        raise MatrixValidationError("Topic may not contain line breaks")
+    if not SAFE_CITEKEY.fullmatch(citekey):
+        raise MatrixValidationError("Citekey contains unsafe characters")

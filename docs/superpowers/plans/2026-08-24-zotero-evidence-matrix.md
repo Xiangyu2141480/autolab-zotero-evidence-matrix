@@ -59,6 +59,8 @@ Execution evidence: `python -m pytest tests/test_matrix.py -q` first failed with
 
 Execution evidence: `python -m pytest tests/test_matrix.py -q -k render_matrix` first failed during test collection with `ImportError: cannot import name 'render_matrix'`, proving the requested API was absent. After the minimal renderer was added, the same command reported `2 passed, 3 deselected in 0.02s`; the full module test run reported `5 passed in 0.03s`.
 
+Security follow-up evidence: focused tests for a line-broken topic and a citekey containing `]` plus a line break first failed with `DID NOT RAISE`. The parser and renderer now share validation that rejects topics with line breaks and accepts citekeys only matching `[A-Za-z0-9][A-Za-z0-9_.:+-]*`; `python -m pytest tests/test_matrix.py -q` then reported `7 passed in 0.05s`.
+
 ### Task 3: CLI boundaries and documentation
 
 **Files:**
