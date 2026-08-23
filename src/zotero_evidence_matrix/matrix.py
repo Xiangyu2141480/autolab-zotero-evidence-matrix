@@ -7,6 +7,7 @@ from pathlib import Path
 
 REQUIRED_COLUMNS = ("title", "citekey", "topic", "claim", "limitation")
 SAFE_CITEKEY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:+-]*")
+MARKDOWN_HEADING_CONTROLS = frozenset("\\`*_{}[]()<>#+-.!~|")
 
 
 class MatrixValidationError(ValueError):
@@ -89,7 +90,7 @@ def render_matrix(rows: list[EvidenceRow]) -> str:
         sections.append(
             "\n".join(
                 [
-                    f"## {topic}",
+                    f"## {_escape_heading(topic)}",
                     "",
                     "| Title | Claim | Limitation | Citation |",
                     "| --- | --- | --- | --- |",
@@ -106,6 +107,13 @@ def _escape_cell(value: str) -> str:
         .replace("\r\n", "\n")
         .replace("\r", "\n")
         .replace("\n", "<br>")
+    )
+
+
+def _escape_heading(value: str) -> str:
+    return "".join(
+        f"\\{character}" if character in MARKDOWN_HEADING_CONTROLS else character
+        for character in value
     )
 
 

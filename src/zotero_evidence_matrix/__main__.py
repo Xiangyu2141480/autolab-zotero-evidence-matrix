@@ -23,8 +23,15 @@ def main() -> int:
     except MatrixValidationError as error:
         print(error, file=sys.stderr)
         return 2
+    except OSError:
+        print("Unable to read input file", file=sys.stderr)
+        return 2
 
-    arguments.output.write_text(rendered, encoding="utf-8")
+    try:
+        arguments.output.write_text(rendered, encoding="utf-8")
+    except OSError:
+        print("Unable to write output file", file=sys.stderr)
+        return 2
     return 0
 
 

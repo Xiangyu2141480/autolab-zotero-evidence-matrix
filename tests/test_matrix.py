@@ -124,6 +124,23 @@ def test_render_matrix_rejects_a_citekey_outside_the_safe_grammar():
         render_matrix([row])
 
 
+def test_build_and_render_matrix_escape_markdown_controls_in_topic_headings(tmp_path):
+    source = tmp_path / "notes.csv"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "Paper,p2026,[click](javascript:alert(1)),Useful,Small sample\n",
+        encoding="utf-8",
+    )
+
+    rows = build_matrix(source)
+
+    assert rows[0].topic == "[click](javascript:alert(1))"
+    assert (
+        "## \\[click\\]\\(javascript:alert\\(1\\)\\)"
+        in render_matrix(rows)
+    )
+
+
 def test_module_cli_writes_a_rendered_matrix(tmp_path):
     source = tmp_path / "notes.csv"
     destination = tmp_path / "matrix.md"
@@ -192,3 +209,51 @@ def test_module_cli_reports_validation_errors_concisely(tmp_path):
     assert result.returncode != 0
     assert result.stdout == ""
     assert result.stderr.strip() == "Missing required CSV columns: limitation"
+
+
+def test_module_cli_escapes_markdown_controls_in_topic_headings(tmp_path):
+    source = tmp_path / "notes.csv"
+    destination = tmp_path / "matrix.md"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "Paper,p2026,[click](javascript:alert(1)),Useful,Small sample\n",
+        encoding="utf-8",
+    )
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [sys.executable, "-m", "zotero_evidence_matrix", str(source), str(destination)],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "## \\[click\\]\\(javascript:alert\\(1\\)\\)" in destination.read_text(
+        encoding="utf-8"
+    )
+
+
+def test_module_cli_reports_a_missing_input_file_concisely(tmp_path):
+    missing_source = tmp_path / "missing.csv"
+    destination = tmp_path / "matrix.md"
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [
+            sys.executable,
+            "-m",
+            "zotero_evidence_matrix",
+            str(missing_source),
+            str(destination),
+        ],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert result.stderr.strip() == "Unable to read input file"

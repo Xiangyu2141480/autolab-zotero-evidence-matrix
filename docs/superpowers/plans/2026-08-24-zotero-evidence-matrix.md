@@ -86,6 +86,8 @@ Review repair evidence: duplicate citekeys within one trimmed topic and malforme
 
 Isolated audit repair evidence: the build backend requirement now pins `setuptools==84.0.0`, and CI upgrades both `pip` and `setuptools` before installing the project. In a fresh ignored `.venv`, `python -m pip install --upgrade pip setuptools` installed `pip 26.2.1` and `setuptools 84.0.0`; `python -m pip install -e '.[dev]'` installed the pinned development tooling. Fresh venv verification reported `12 passed in 0.38s`, `All checks passed!`, and `No known vulnerabilities found`. The auditor skips the local package because it is not published on PyPI, as expected.
 
+Final quality repair evidence: tests for `[click](javascript:alert(1))` in a parsed/directly rendered topic heading and in CLI output, plus a missing-input CLI test, first reported three failures: two unsafe unescaped headings and one traceback. Topic headings now escape Markdown control punctuation, and CLI `OSError` boundaries report `Unable to read input file` or `Unable to write output file` with a nonzero status. The focused test run reported `3 passed, 12 deselected`; the full venv suite reported `15 passed in 0.60s` and Ruff reported `All checks passed!`.
+
 ## Plan self-review
 
 The three tasks cover each specified input/output behavior, all validation boundaries, no-network safety, test proof, documentation, license, and CI. The plan has no unbounded feature work; it is one local transformation only.
