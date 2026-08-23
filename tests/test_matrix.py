@@ -5,7 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
 
-from zotero_evidence_matrix.matrix import build_matrix
+from zotero_evidence_matrix.matrix import EvidenceRow, build_matrix, render_matrix
 
 
 def test_build_matrix_groups_rows_and_keeps_citekeys(tmp_path):
@@ -46,3 +46,30 @@ def test_build_matrix_rejects_a_whitespace_only_required_value(tmp_path):
         match="Blank required value for 'claim' in row 2",
     ):
         build_matrix(source)
+
+
+def test_render_matrix_groups_topics_in_case_insensitive_order_and_keeps_citekeys():
+    rows = [
+        EvidenceRow("Z paper", "z2024", "zebra", "Last", "Limited"),
+        EvidenceRow("A paper", "a2024", "  Alpha  ", "First", "Limited"),
+    ]
+
+    rendered = render_matrix(rows)
+
+    assert rendered.index("## Alpha") < rendered.index("## zebra")
+    assert "| A paper | First | Limited | [@a2024] |" in rendered
+    assert "| Z paper | Last | Limited | [@z2024] |" in rendered
+
+
+def test_render_matrix_escapes_pipes_and_line_breaks_in_table_cells():
+    row = EvidenceRow(
+        "A | paper\nrevised",
+        "a2024",
+        "Methods",
+        "Claim | detail\ncontinued",
+        "A\nlimitation | note",
+    )
+
+    rendered = render_matrix([row])
+
+    assert "| A \\| paper<br>revised | Claim \\| detail<br>continued | A<br>limitation \\| note | [@a2024] |" in rendered

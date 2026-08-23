@@ -49,3 +49,40 @@ def build_matrix(source: Path) -> list[EvidenceRow]:
             rows.append(EvidenceRow(**required_values, **optional_values))
 
         return rows
+
+
+def render_matrix(rows: list[EvidenceRow]) -> str:
+    """Render validated evidence rows as a topic-grouped Markdown matrix."""
+    groups: dict[str, list[EvidenceRow]] = {}
+    for row in rows:
+        topic = row.topic.strip()
+        groups.setdefault(topic, []).append(row)
+
+    sections = []
+    for topic in sorted(groups, key=str.casefold):
+        table_rows = [
+            f"| {_escape_cell(row.title)} | {_escape_cell(row.claim)} | "
+            f"{_escape_cell(row.limitation)} | [@{_escape_cell(row.citekey)}] |"
+            for row in groups[topic]
+        ]
+        sections.append(
+            "\n".join(
+                [
+                    f"## {topic}",
+                    "",
+                    "| Title | Claim | Limitation | Citation |",
+                    "| --- | --- | --- | --- |",
+                    *table_rows,
+                ]
+            )
+        )
+    return "\n\n".join(sections) + ("\n" if sections else "")
+
+
+def _escape_cell(value: str) -> str:
+    return (
+        value.replace("|", "\\|")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .replace("\n", "<br>")
+    )
