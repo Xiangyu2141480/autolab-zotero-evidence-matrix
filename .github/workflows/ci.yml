@@ -17,6 +17,7 @@ jobs:
       - run: python -m pytest -q
       - run: python -m ruff check .
       - run: python -m pip_audit
+      - run: python -m build
       - name: Scan for credentials
         run: |
           python - <<'PY'

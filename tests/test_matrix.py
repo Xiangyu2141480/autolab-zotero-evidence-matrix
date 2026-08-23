@@ -257,3 +257,26 @@ def test_module_cli_reports_a_missing_input_file_concisely(tmp_path):
     assert result.returncode != 0
     assert result.stdout == ""
     assert result.stderr.strip() == "Unable to read input file"
+
+
+def test_module_cli_reports_an_unwritable_output_path_concisely(tmp_path):
+    source = tmp_path / "notes.csv"
+    destination = tmp_path / "missing-directory" / "matrix.md"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "Paper,p2026,Methods,Useful,Small sample\n",
+        encoding="utf-8",
+    )
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [sys.executable, "-m", "zotero_evidence_matrix", str(source), str(destination)],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert result.stderr.strip() == "Unable to write output file"
