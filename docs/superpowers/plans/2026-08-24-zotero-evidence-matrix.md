@@ -71,12 +71,16 @@ Security follow-up evidence: focused tests for a line-broken topic and a citekey
 - Create: `.github/workflows/ci.yml`
 - Create: `pyproject.toml`
 
-- [ ] **Step 1: Write failing CLI tests** for output generation and rejected input/output collision.
-- [ ] **Step 2: Run tests** and confirm failure because the CLI is absent.
-- [ ] **Step 3: Implement CLI** to call the library, create a UTF-8 output, and return non-zero for domain errors.
-- [ ] **Step 4: Add run instructions, data-safety disclosure, MIT license, synthetic example, and CI** running tests, Ruff, pip-audit, and credential-pattern scan.
-- [ ] **Step 5: Run full verification**: `pytest -q`, `ruff check .`, `pip_audit`, `git diff --check`, and secret scan.
-- [ ] **Step 6: Commit and push a branch; create a PR** after reviewing diff.
+- [x] **Step 1: Write failing CLI tests** for output generation and rejected input/output collision.
+- [x] **Step 2: Run tests** and confirm failure because the CLI is absent.
+- [x] **Step 3: Implement CLI** to call the library, create a UTF-8 output, and return non-zero for domain errors.
+- [x] **Step 4: Add run instructions, data-safety disclosure, MIT license, synthetic example, and CI** running tests, Ruff, pip-audit, and credential-pattern scan.
+- [x] **Step 5: Run full verification**: `pytest -q`, `ruff check .`, `pip_audit`, `git diff --check`, and secret scan.
+- [x] **Step 6: Commit locally after reviewing diff.** No push or PR is authorized for this local-only task.
+
+Execution evidence: First, `python -m pytest tests/test_matrix.py -q` reported `2 failed, 7 passed`; both failures said `No module named zotero_evidence_matrix.__main__`, confirming the CLI was absent. After adding `__main__.py`, the same command reported `9 passed in 0.30s`.
+
+Verification evidence: `python -m pytest -q` reported `9 passed in 0.23s`; `python -m ruff check .` reported `All checks passed!`; `git diff --check` exited successfully; and the credential-pattern scan reported `credential scan: no matches`. The local interpreter has Ruff 0.4.10 and no `pip_audit` module, so an audit could not run locally without installing dependencies; the CI workflow installs and invokes the exact configured `pip-audit==2.10.0`.
 
 ## Plan self-review
 

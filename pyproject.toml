@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zotero-evidence-matrix"
+version = "0.1.0"
+description = "Create a local Markdown evidence matrix from a constrained Zotero-note CSV."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Autolab" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "ruff==0.12.10",
+  "pip-audit==2.10.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

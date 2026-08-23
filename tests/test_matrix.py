@@ -1,5 +1,7 @@
 import sys
+import os
 from pathlib import Path
+from subprocess import run
 
 import pytest
 
@@ -92,3 +94,51 @@ def test_render_matrix_rejects_a_citekey_outside_the_safe_grammar():
 
     with pytest.raises(MatrixValidationError, match="Citekey contains unsafe characters"):
         render_matrix([row])
+
+
+def test_module_cli_writes_a_rendered_matrix(tmp_path):
+    source = tmp_path / "notes.csv"
+    destination = tmp_path / "matrix.md"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "A paper,a2024,Methods,Useful,Small sample\n",
+        encoding="utf-8",
+    )
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [sys.executable, "-m", "zotero_evidence_matrix", str(source), str(destination)],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert destination.read_text(encoding="utf-8") == (
+        "## Methods\n\n"
+        "| Title | Claim | Limitation | Citation |\n"
+        "| --- | --- | --- | --- |\n"
+        "| A paper | Useful | Small sample | [@a2024] |\n"
+    )
+
+
+def test_module_cli_rejects_matching_input_and_output_paths(tmp_path):
+    source = tmp_path / "notes.csv"
+    source.write_text(
+        "title,citekey,topic,claim,limitation\n"
+        "A paper,a2024,Methods,Useful,Small sample\n",
+        encoding="utf-8",
+    )
+
+    environment = os.environ | {"PYTHONPATH": str(Path(__file__).parents[1] / "src")}
+    result = run(
+        [sys.executable, "-m", "zotero_evidence_matrix", str(source), str(source)],
+        capture_output=True,
+        encoding="utf-8",
+        env=environment,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert result.stderr.strip() == "Input and output paths must differ"
