@@ -16,4 +16,4 @@ Missing headers, blank required values, duplicate cite keys within a topic, malf
 
 ## Testing
 
-Tests cover a valid two-topic conversion, Markdown escaping, missing required data, duplicate keys in one topic, and input/output path collision. A fixture is synthetic and contains no personal data.
+Tests cover a valid two-topic conversion, Markdown escaping, missing required data, malformed CSV mapping, duplicate keys in one topic, concise CLI validation errors, and input/output path collision. A fixture is synthetic and contains no personal data.
