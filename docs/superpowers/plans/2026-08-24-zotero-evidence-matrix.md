@@ -44,7 +44,7 @@ def build_matrix(source: Path) -> list[EvidenceRow]: ...
 Run: `python -m pytest tests/test_matrix.py -q`
 Expected: `1 passed`.
 
-Execution evidence: `python -m pytest tests/test_matrix.py -q` first failed with `ModuleNotFoundError: No module named 'zotero_evidence_matrix'` before the package existed; after implementation, the same command reported `1 passed in 0.07s`.
+Execution evidence: `python -m pytest tests/test_matrix.py -q` first failed with `ModuleNotFoundError: No module named 'zotero_evidence_matrix'` before the package existed; after implementation, the same command reported `1 passed in 0.07s`. Validation follow-up: `python -m pytest tests/test_matrix.py -q -k missing_required_header` and `python -m pytest tests/test_matrix.py -q -k whitespace_only_required_value` each first failed because `MatrixValidationError` did not exist; after implementation, `python -m pytest tests/test_matrix.py -q` reported `3 passed in 0.06s`.
 
 ### Task 2: Deterministic Markdown renderer
 
