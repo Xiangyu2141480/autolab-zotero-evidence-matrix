@@ -2,16 +2,21 @@
 
 Convert a constrained, local Zotero-note CSV into a topic-grouped Markdown evidence matrix.
 
-## Run
+## Quickstart (first run)
 
-Requires Python 3.11 or newer. From a checkout, install the package and its development tools:
+Requires Python 3.11 or newer. From a fresh checkout, create an isolated environment, install, and run the synthetic example:
 
 ```powershell
-python -m pip install -e ".[dev]"
-python -m zotero_evidence_matrix examples/notes.csv evidence-matrix.md
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip setuptools
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m zotero_evidence_matrix examples\notes.csv evidence-matrix.md
+Get-Content evidence-matrix.md
 ```
 
-The input and output must be different paths. Invalid CSV data is reported concisely on standard error and produces a nonzero exit code.
+The command produces a topic-grouped Markdown table like [examples/expected-matrix.md](examples/expected-matrix.md). The input and output must be different paths. Invalid CSV data is reported concisely on standard error and produces a nonzero exit code.
+
+For a 60-second walkthrough, use [the demo script](docs/DEMO_60_SECONDS.md). The validation materials are private preparation only; this project is not currently public or collecting feedback.
 
 ## CSV schema
 
